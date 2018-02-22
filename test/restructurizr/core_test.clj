@@ -1,14 +1,14 @@
 (ns restructurizr.core-test
   (:require [restructurizr.core :as rc]
             [clojure.test :as ct :refer [deftest]]
-            [restructurizr.test-utils :as rtu :refer [check']]
-            [clojure.spec.test.alpha :as st :refer [check]]))
+            [restructurizr.test-utils :as rtu :refer [check]]
+            [clojure.spec.test.alpha :as st]))
 
-(deftest blank-nil-or-empty? (check' (check `rc/blank-nil-or-empty?)))
-(deftest parse-coords (check' (check `rc/parse-coords)))
-(deftest round-to-closest (check' (check `rc/round-to-closest)))
-(deftest snap-coords (check' (check `rc/snap-coords)))
-(deftest shrink (check' (check `rc/shrink)))
+(deftest blank-nil-or-empty? (check `rc/blank-nil-or-empty?))
+(deftest parse-coords (check `rc/parse-coords))
+(deftest round-to-closest (check `rc/round-to-closest))
+(deftest snap-coords (check `rc/snap-coords))
+(deftest shrink (check `rc/shrink 300))
 
 ;; This is a fake test that exists just to shut down the thread pools that back agents. None of the
 ;; code in this project uses agents, but I guess maybe one of the libraries does. Not sure which.
