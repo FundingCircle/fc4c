@@ -148,13 +148,21 @@
     diagram
     desired-order))
 
-(def coord-pattern #"^(-?\d{1,4}), ?(-?\d{1,4})$")
+(def coord-pattern #"^(\d{1,4}), ?(\d{1,4})$")
 
 (s/def ::coord-string
   (s/with-gen string?
     ;; unfortunately we can’t use coord-pattern here because coord-pattern has anchors
     ;; which are not supported by string-from-regex.
-    #(gen'/string-from-regex #"(-?\d{1,4}), ?(-?\d{1,4})")))
+    #(gen'/string-from-regex #"(\d{1,4}), ?(\d{1,4})")))
+
+(s/def ::coord-int
+  ;; The upper bound here was semi-randomly chosen; we just need a reasonable number that a real
+  ;; diagram is unlikely to ever need but that won’t cause integer overflows when multiplied.
+  ;; In other words, we’re using int-in rather than nat-int? because sometimes the generator for
+  ;; nat-int? returns very very large integers, and those can sometimes blow up the functions
+  ;; during generative testing.
+  (s/int-in 0 50000))
 
 (defn parse-coords [s]
   (some->> s
@@ -164,7 +172,7 @@
 
 (s/fdef parse-coords
   :args (s/cat :s ::coord-string)
-  :ret (s/coll-of int? :count 2)
+  :ret (s/coll-of ::coord-int :count 2)
   :fn (fn [{:keys [ret args]}]
         (= ret
            (->> (split (:s args) #",") 
@@ -179,8 +187,8 @@
         (* target))))
 
 (s/fdef round-to-closest
-  :args (s/cat :target nat-int?, :n nat-int?)
-  :ret nat-int?
+  :args (s/cat :target ::coord-int, :n #{10 25 50 75 100})
+  :ret ::coord-int
   :fn (fn [{:keys [ret args]}]
         (let [{:keys [target n]} args
               remainder (case ret 0 0 (rem ret target))]
