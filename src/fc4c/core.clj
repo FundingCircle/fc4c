@@ -1,7 +1,6 @@
 #!/usr/local/bin/clojure
 
 (ns fc4c.core
-  "You may notice the abbreviation “s9rex” in the code; it’s short for Structurizr Express."
   (:require [clj-yaml.core :as yaml]
             [clojure.spec.alpha :as s]
             [com.gfredericks.test.chuck.generators :as gen']
@@ -73,16 +72,26 @@
                   el))
             in))
 
-(s/def ::s9rex-doc
-  (s/every-kv keyword?
-              (s/or :string string?
-                    :int nat-int?
-                    :coll-int (s/coll-of nat-int?)
-                    :s9rex-doc ::s9rex-doc)
-              :gen-max 5))
+(s/def ::name string?)
+(s/def ::type #{"element" "relationship" "System Landscape" "System Context" "Container" "Person" "Software System"})
+(s/def ::scope string?)
+(s/def ::position ::coord-string)
+(s/def ::description string?)
+(s/def ::tags string?)
+(s/def ::technology string?)
+(s/def ::container (s/keys :req [::name ::type ::position]
+                           :opt [::description ::tags ::technology]))
+(s/def ::containers (s/coll-of ::container))
+(s/def ::element
+  (s/keys :req [::name ::type ::position]
+          :opt [::description ::containers ::tags]))
+(s/def ::elements (s/coll-of ::element))
+
+(s/def ::diagram
+  (s/keys :req [::type ::scope ::description ::elements ::relationships ::styles ::size]))
 
 (s/fdef shrink
-  :args (s/cat :in ::s9rex-doc)
+  :args (s/cat :in ::diagram)
   :ret (s/nilable map?)
   :fn (fn [{{in :in} :args, ret :ret}]
         (let [leaf-vals #(->> (tree-seq map? vals %)
@@ -179,6 +188,8 @@
                 (map trim)
                 (map #(Integer/parseInt %))))))
 
+(s/def ::snap-target #{10 25 50 75 100})
+
 (defn round-to-closest [target n]
   (case n
     0 0
@@ -187,7 +198,8 @@
         (* target))))
 
 (s/fdef round-to-closest
-  :args (s/cat :target ::coord-int, :n #{10 25 50 75 100})
+  :args (s/cat :target ::snap-target
+               :n ::coord-int)
   :ret ::coord-int
   :fn (fn [{:keys [ret args]}]
         (let [{:keys [target n]} args
@@ -222,11 +234,22 @@
 (defn snap-elem-to-grid
   "Accepts an ordered map representing an element (a software system, person, container, or
   component) and snaps its position (coords) to a grid using the specified values."
-  [e to-closest min-margin]
-  (let [coords (parse-coords (:position e))
-        offsets (get elem-offsets (:type e) (repeat 0))
+  [elem to-closest min-margin]
+  (let [coords (parse-coords (::position elem))
+        offsets (get elem-offsets (::type elem) (repeat 0))
         new-coords (snap-coords coords to-closest min-margin offsets)]
-    (assoc e :position new-coords)))
+    (assoc elem ::position new-coords)))
+
+(s/fdef snap-elem-to-grid
+  :args (s/cat :elem ::elem
+               :to-closest ::snap-target
+               :min-margin nat-int?)
+  :ret ::elem
+  :fn (fn [{{:keys [elem to-closest min-margin]} :args, ret :ret}]
+        (= (::position ret)
+           (-> (::position elem)
+               parse-coords
+               (snap-coords to-closest min-margin)))))
 
 (defn snap-vertices-to-grid
   "Accepts an ordered-map representing a relationship, and snaps its vertices, if any, to a grid
