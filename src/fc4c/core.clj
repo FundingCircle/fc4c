@@ -1,7 +1,8 @@
 #!/usr/local/bin/clojure
 
 (ns fc4c.core
-  (:require [clj-yaml.core :as yaml]
+  (:require [fc4c.spec :as fs]
+            [clj-yaml.core :as yaml]
             [clojure.spec.alpha :as s]
             [com.gfredericks.test.chuck.generators :as gen']
             [flatland.ordered.map :refer [ordered-map]]
@@ -72,24 +73,6 @@
                   el))
             in))
 
-(s/def ::name string?)
-(s/def ::type #{"element" "relationship" "System Landscape" "System Context" "Container" "Person" "Software System"})
-(s/def ::scope string?)
-(s/def ::position ::coord-string)
-(s/def ::description string?)
-(s/def ::tags string?)
-(s/def ::technology string?)
-(s/def ::container (s/keys :req [::name ::type ::position]
-                           :opt [::description ::tags ::technology]))
-(s/def ::containers (s/coll-of ::container))
-(s/def ::element
-  (s/keys :req [::name ::type ::position]
-          :opt [::description ::containers ::tags]))
-(s/def ::elements (s/coll-of ::element))
-
-(s/def ::diagram
-  (s/keys :req [::type ::scope ::description ::elements ::relationships ::styles ::size]))
-
 (s/fdef shrink
   :args (s/cat :in ::diagram)
   :ret (s/nilable map?)
@@ -157,21 +140,7 @@
     diagram
     desired-order))
 
-(def coord-pattern #"^(\d{1,4}), ?(\d{1,4})$")
-
-(s/def ::coord-string
-  (s/with-gen string?
-    ;; unfortunately we can’t use coord-pattern here because coord-pattern has anchors
-    ;; which are not supported by string-from-regex.
-    #(gen'/string-from-regex #"(\d{1,4}), ?(\d{1,4})")))
-
-(s/def ::coord-int
-  ;; The upper bound here was semi-randomly chosen; we just need a reasonable number that a real
-  ;; diagram is unlikely to ever need but that won’t cause integer overflows when multiplied.
-  ;; In other words, we’re using int-in rather than nat-int? because sometimes the generator for
-  ;; nat-int? returns very very large integers, and those can sometimes blow up the functions
-  ;; during generative testing.
-  (s/int-in 0 50000))
+(def coord-pattern (re-pattern (str "^" fs/coord-pattern-base "$")))
 
 (defn parse-coords [s]
   (some->> s
@@ -188,14 +157,14 @@
                 (map trim)
                 (map #(Integer/parseInt %))))))
 
-(s/def ::snap-target #{10 25 50 75 100})
-
 (defn round-to-closest [target n]
   (case n
     0 0
     (-> (/ n (float target))
         Math/round
         (* target))))
+
+(s/def ::snap-target #{10 25 50 75 100})
 
 (s/fdef round-to-closest
   :args (s/cat :target ::snap-target
@@ -241,10 +210,10 @@
     (assoc elem ::position new-coords)))
 
 (s/fdef snap-elem-to-grid
-  :args (s/cat :elem ::elem
+  :args (s/cat :elem ::element
                :to-closest ::snap-target
                :min-margin nat-int?)
-  :ret ::elem
+  :ret ::element
   :fn (fn [{{:keys [elem to-closest min-margin]} :args, ret :ret}]
         (= (::position ret)
            (-> (::position elem)
