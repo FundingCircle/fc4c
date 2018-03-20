@@ -1,6 +1,7 @@
 #!/usr/local/bin/clojure
 
 (ns fc4c.core
+  "You may notice the abbreviation “s9rex” in the code; it’s short for Structurizr Express."
   (:require [clj-yaml.core :as yaml]
             [clojure.spec.alpha :as s]
             [com.gfredericks.test.chuck.generators :as gen']
@@ -64,13 +65,35 @@
   nil, blank, or empty.
   
   Adapted from https://stackoverflow.com/a/29363255/7012"
-  [nm]
+  [in]
   (postwalk (fn [el]
               (if (map? el)
                   (let [m (into {} (remove (comp blank-nil-or-empty? second) el))]
                     (when (seq m) m))
                   el))
-            nm))
+            in))
+
+(s/def ::s9rex-doc
+  (s/every-kv keyword?
+              (s/or :string string?
+                    :int nat-int?
+                    :coll-int (s/coll-of nat-int?)
+                    :s9rex-doc ::s9rex-doc)
+              :gen-max 5))
+
+(s/fdef shrink
+  :args (s/cat :in ::s9rex-doc)
+  :ret (s/nilable map?)
+  :fn (fn [{{in :in} :args, ret :ret}]
+        (let [leaf-vals #(->> (tree-seq map? vals %)
+                              (filter (complement map?))
+                              flatten)
+              in-vals (->> (leaf-vals in) (filter (complement blank-nil-or-empty?)))
+              ret-vals (leaf-vals ret)]
+          (if (seq in-vals)
+              (and (not-any? blank-nil-or-empty? ret-vals)
+                   (= in-vals ret-vals))
+              (nil? ret)))))
 
 (defn reorder
   "Reorder a map as per a seq of keys.

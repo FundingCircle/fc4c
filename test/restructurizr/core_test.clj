@@ -8,6 +8,7 @@
 (deftest parse-coords (check' (check `rc/parse-coords)))
 (deftest round-to-closest (check' (check `rc/round-to-closest)))
 (deftest snap-coords (check' (check `rc/snap-coords)))
+(deftest shrink (check' (check `rc/shrink)))
 
 ;; This is a fake test that exists just to shut down the thread pools that back agents. None of the
 ;; code in this project uses agents, but I guess maybe one of the libraries does. Not sure which.
