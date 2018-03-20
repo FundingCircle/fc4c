@@ -27,4 +27,4 @@ COPY . ./
 # The max heap size is set to 1GB because Docker machines frequently have less than 4GB of RAM, and
 # JDK 8 defaults to setting the max heap to 1/4 of the total RAM, but such a small heap max leads
 # to OOM errors when running the tests (at 512MB; I’ve only tested 512MB and 1GB).
-ENTRYPOINT sleep 1; clj -J-Xmx1g -Atest
+ENTRYPOINT sleep 1; clj -J-Xmx1g -A:run-tests

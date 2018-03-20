@@ -30,9 +30,9 @@ docker run --rm `docker build -q .`
 If you’re old-school and prefer to run tests on bare metal:
 
 1. Have `clj` installed ([guide](https://clojure.org/guides/getting_started))
-1. Run in your shell: `clj -Atest`
+1. Run in your shell: `clj -A:run-tests`
 
 ## Starting a REPL for Dev/Test
 
 You could just run `clj` but you’re likely to want the test deps and code to be accessible. In that
-case run `clj -Ctest -Rtest`
+case run `clj -Adev`
