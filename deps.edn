@@ -1,4 +1,14 @@
 {:deps
  {org.clojure/core.async {:mvn/version "0.4.474"}
   circleci/clj-yaml {:mvn/version "0.5.6"}
-  potemkin {:mvn/version "0.4.4"}}}  
+  potemkin {:mvn/version "0.4.4"}
+
+  ;; test.chuck is in the main dependency list, rather than in the test profile, because we’re
+  ;; using one of its generators in a source file.
+  com.gfredericks/test.chuck {:mvn/version "0.2.8"}}
+
+ :aliases {:test {:extra-paths ["test"]
+                  :extra-deps  {org.clojure/test.check     {:mvn/version "0.9.0"}
+                                com.cognitect/test-runner  {:git/url "https://github.com/cognitect-labs/test-runner"
+                                                            :sha "5fb4fc46ad0bf2e0ce45eba5b9117a2e89166479"}}
+                  :main-opts   ["-m" "cognitect.test-runner"]}}}

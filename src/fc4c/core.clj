@@ -2,8 +2,10 @@
 
 (ns fc4c.core
   (:require [clj-yaml.core :as yaml]
+            [clojure.spec.alpha :as s]
+            [com.gfredericks.test.chuck.generators :as gen']
             [flatland.ordered.map :refer [ordered-map]]
-            [clojure.string :as str :refer [blank? join]]
+            [clojure.string :as str :refer [blank? join split trim]]
             [clojure.walk :as walk :refer [postwalk]]
             [clojure.set :refer [difference intersection]]))
 
@@ -32,6 +34,29 @@
            (empty? v))
       (and (string? v)
            (blank? v))))
+
+(s/fdef blank-nil-or-empty?
+  :args (s/cat :v (s/or :nil nil?                        
+                        :coll (s/coll-of any?
+                                         ; for this fn it matters only if the coll is empty or not
+                                         :gen-max 1)
+                        :string string?))
+  :ret boolean?
+  :fn (fn [{:keys [ret args]}]
+        (let [[which v] (:v args)]
+          (case which
+            :nil
+            (= ret true)
+            
+            :coll
+            (if (empty? v)
+                (= ret true)
+                (= ret false))
+
+            :string
+            (if (blank? v)
+                (= ret true)
+                (= ret false))))))
 
 (defn shrink
   "Remove key-value pairs wherein the value is blank, nil, or empty from a
@@ -100,16 +125,43 @@
     diagram
     desired-order))
 
+(def coord-pattern #"^(-?\d{1,4}), ?(-?\d{1,4})$")
+
+(s/def ::coord-string
+  (s/with-gen string?
+    ;; unfortunately we can’t use coord-pattern here because coord-pattern has anchors
+    ;; which are not supported by string-from-regex.
+    #(gen'/string-from-regex #"(-?\d{1,4}), ?(-?\d{1,4})")))
+
 (defn parse-coords [s]
   (some->> s
-           (re-find #"^(-?\d+), ?(-?\d+)$")
+           (re-find coord-pattern)
            (drop 1)
            (map #(Integer/parseInt %))))
 
+(s/fdef parse-coords
+  :args (s/cat :s ::coord-string)
+  :ret (s/coll-of int? :count 2)
+  :fn (fn [{:keys [ret args]}]
+        (= ret
+           (->> (split (:s args) #",") 
+                (map trim)
+                (map #(Integer/parseInt %))))))
+
 (defn round-to-closest [target n]
-  (-> (/ n (float target))
-      Math/round
-      (* target)))
+  (case n
+    0 0
+    (-> (/ n (float target))
+        Math/round
+        (* target))))
+
+(s/fdef round-to-closest
+  :args (s/cat :target nat-int?, :n nat-int?)
+  :ret nat-int?
+  :fn (fn [{:keys [ret args]}]
+        (let [{:keys [target n]} args
+              remainder (case ret 0 0 (rem ret target))]
+          (zero? remainder))))
 
 (def elem-offsets
   {"Person" [25, -50]})
@@ -125,6 +177,16 @@
         (map (partial max min-margin)) ; minimum left/top margins
         (map + offsets)
         (join ","))))
+
+(s/fdef snap-coords
+  :args (s/cat :coords (s/coll-of nat-int? :count 2)
+               :to-closest nat-int?
+               :min-margin nat-int?)
+  :ret ::coord-string
+  :fn (fn [{:keys [ret args]}]
+        (let [parsed-ret (parse-coords ret)
+              {:keys [:to-closest :min-margin]} args]
+         (every? #(>= % min-margin) parsed-ret))))
 
 (defn snap-elem-to-grid
   "Accepts an ordered map representing an element (a software system, person, container, or
