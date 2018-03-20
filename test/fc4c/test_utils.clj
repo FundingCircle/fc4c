@@ -1,4 +1,4 @@
-(ns restructurizr.test-utils
+(ns fc4c.test-utils
   (:require [clojure.test :as t :refer [is]]
             [clojure.spec.test.alpha :as st]
             [clojure.pprint :as pprint]))

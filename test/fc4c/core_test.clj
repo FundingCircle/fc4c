@@ -1,7 +1,7 @@
-(ns restructurizr.core-test
-  (:require [restructurizr.core :as rc]
+(ns fc4c.core-test
+  (:require [fc4c.core :as rc]
             [clojure.test :as ct :refer [deftest]]
-            [restructurizr.test-utils :as rtu :refer [check]]
+            [fc4c.test-utils :as rtu :refer [check]]
             [clojure.spec.test.alpha :as st]))
 
 (deftest blank-nil-or-empty? (check `rc/blank-nil-or-empty?))
