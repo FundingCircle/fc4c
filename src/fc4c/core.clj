@@ -43,7 +43,7 @@
                                          :gen-max 1)
                         :string string?))
   :ret boolean?
-  :fn (fn [{:keys [ret args]}]
+  :fn (fn [{:keys [args ret]}]
         (let [[which v] (:v args)]
           (case which
             :nil

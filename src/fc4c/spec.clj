@@ -20,10 +20,11 @@
   (s/int-in 0 50000))
 
 
+
+
 (ns fc4c.spec.element
   (:require [clojure.spec.alpha :as s]
-            [fc4c.spec :as fs]
-            [com.gfredericks.test.chuck.generators :as gen']))
+            [fc4c.spec :as fs]))
 
 (s/def ::type #{"Container" "Person" "Software System"})
 (s/def ::position ::fs/coord-string)
@@ -40,8 +41,7 @@
 
 (ns fc4c.spec.relationship
   (:require [clojure.spec.alpha :as s]
-            [fc4c.spec :as fs]
-            [com.gfredericks.test.chuck.generators :as gen']))
+            [fc4c.spec :as fs]))
 
 (s/def ::source string?)
 (s/def ::destination string?)
@@ -55,8 +55,7 @@
 
 (ns fc4c.spec.style
   (:require [clojure.spec.alpha :as s]
-            [fc4c.spec :as fs]
-            [com.gfredericks.test.chuck.generators :as gen']))
+            [fc4c.spec :as fs]))
 
 (s/def ::type #{"element" "relationship"})
 (s/def ::tag string?)
@@ -79,8 +78,7 @@
             [fc4c.spec :as fs]
             [fc4c.spec.element :as fse]
             [fc4c.spec.relationship :as fsr]
-            [fc4c.spec.style :as fss]
-            [com.gfredericks.test.chuck.generators :as gen']))
+            [fc4c.spec.style :as fss]))
 
 (s/def ::type #{"System Landscape" "System Context" "Container"})
 (s/def ::scope string?)
