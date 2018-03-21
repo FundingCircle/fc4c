@@ -73,18 +73,25 @@
                   el))
             in))
 
+(require '[clojure.pprint :refer [pprint]])
+
 (s/fdef shrink
-  :args (s/cat :in ::diagram)
-  :ret (s/nilable map?)
-  :fn (fn [{{in :in} :args, ret :ret}]
-        (let [leaf-vals #(->> (tree-seq map? vals %)
-                              (filter (complement map?))
+  :args (s/cat :in :fc4c/diagram)
+  :ret :fc4c/diagram
+  :fn (fn [{{in :in} :args
+            ret :ret}]
+        (let [all-vals #(if (map? %) (vals %) %) ; works on maps or sequences
+              leaf-vals #(->> (tree-seq coll? all-vals %)
+                              (filter (complement coll?))
                               flatten)
               in-vals (->> (leaf-vals in) (filter (complement blank-nil-or-empty?)))
               ret-vals (leaf-vals ret)]
           (if (seq in-vals)
-              (and (not-any? blank-nil-or-empty? ret-vals)
-                   (= in-vals ret-vals))
+              (= in-vals ret-vals)
+                  ; (do
+                  ;    (pprint in-vals)
+                  ;    (pprint ret-vals)
+                  ;    false))
               (nil? ret)))))
 
 (defn reorder
@@ -149,8 +156,8 @@
            (map #(Integer/parseInt %))))
 
 (s/fdef parse-coords
-  :args (s/cat :s ::coord-string)
-  :ret (s/coll-of ::coord-int :count 2)
+  :args (s/cat :s :fc4c/coord-string)
+  :ret (s/coll-of :fc4c/coord-int :count 2)
   :fn (fn [{:keys [ret args]}]
         (= ret
            (->> (split (:s args) #",") 
@@ -158,22 +165,23 @@
                 (map #(Integer/parseInt %))))))
 
 (defn round-to-closest [target n]
-  (case n
-    0 0
-    (-> (/ n (float target))
-        Math/round
-        (* target))))
+  (if (zero? n)
+      0
+      (-> (/ n (float target))
+          Math/round
+          (* target))))
 
 (s/def ::snap-target #{10 25 50 75 100})
 
 (s/fdef round-to-closest
   :args (s/cat :target ::snap-target
-               :n ::coord-int)
-  :ret ::coord-int
-  :fn (fn [{:keys [ret args]}]
-        (let [{:keys [target n]} args
-              remainder (case ret 0 0 (rem ret target))]
-          (zero? remainder))))
+               :n :fc4c/coord-int)
+  :ret :fc4c/coord-int
+  :fn (fn [{{:keys [target n]} :args
+            ret :ret}]
+        (if (zero? ret) ;;TODO: need to actually validate that the ret value should actually be 0
+            true
+            (zero? (rem ret target)))))
 
 (def elem-offsets
   {"Person" [25, -50]})
@@ -194,29 +202,30 @@
   :args (s/cat :coords (s/coll-of nat-int? :count 2)
                :to-closest nat-int?
                :min-margin nat-int?)
-  :ret ::coord-string
+  :ret :fc4c/coord-string
   :fn (fn [{:keys [ret args]}]
         (let [parsed-ret (parse-coords ret)
               {:keys [:to-closest :min-margin]} args]
          (every? #(>= % min-margin) parsed-ret))))
 
 (defn snap-elem-to-grid
-  "Accepts an ordered map representing an element (a software system, person, container, or
-  component) and snaps its position (coords) to a grid using the specified values."
+  "Accepts an element (a software system, person, container, or
+  component) as a map and snaps its position (coords) to a grid using the
+  specified values."
   [elem to-closest min-margin]
-  (let [coords (parse-coords (::position elem))
-        offsets (get elem-offsets (::type elem) (repeat 0))
+  (let [coords (parse-coords (:fc4c/position elem))
+        offsets (get elem-offsets (:fc4c.element/type elem) (repeat 0))
         new-coords (snap-coords coords to-closest min-margin offsets)]
-    (assoc elem ::position new-coords)))
+    (assoc elem :fc4c.element/position new-coords)))
 
 (s/fdef snap-elem-to-grid
-  :args (s/cat :elem ::element
+  :args (s/cat :elem :fc4c/element
                :to-closest ::snap-target
                :min-margin nat-int?)
-  :ret ::element
+  :ret :fc4c/element
   :fn (fn [{{:keys [elem to-closest min-margin]} :args, ret :ret}]
-        (= (::position ret)
-           (-> (::position elem)
+        (= (:fc4c/position ret)
+           (-> (:fc4c/position elem)
                parse-coords
                (snap-coords to-closest min-margin)))))
 
