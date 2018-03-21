@@ -24,6 +24,11 @@
   (s/int-in 0 50000))
 (s/def :fc4c/position :fc4c/coord-string)
 
+(def int-pattern #"\d{1,6}")
+(s/def :fc4c/int-in-string
+  (s/with-gen (s/and string? (partial re-matches int-pattern))
+              #(gen'/string-from-regex int-pattern)))
+
 (s/def :fc4c.container/name :fc4c/name)
 (s/def :fc4c.container/type #{"Container"})
 (s/def :fc4c.container/position :fc4c/position)
@@ -50,6 +55,7 @@
 (s/def :fc4c.relationship/destination :fc4c/name)
 (s/def :fc4c.relationship/description :fc4c/description)
 (s/def :fc4c.relationship/tags :fc4c/tags)
+(s/def :fc4c.relationship/order :fc4c/int-in-string)
 (s/def :fc4c.relationship/vertices (s/coll-of :fc4c/coord-string))
 
 (s/def :fc4c/relationship
