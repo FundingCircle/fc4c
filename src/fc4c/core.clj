@@ -73,8 +73,6 @@
                   el))
             in))
 
-(require '[clojure.pprint :refer [pprint]])
-
 (s/fdef shrink
   :args (s/cat :in :fc4c/diagram)
   :ret :fc4c/diagram
@@ -88,10 +86,6 @@
               ret-vals (leaf-vals ret)]
           (if (seq in-vals)
               (= in-vals ret-vals)
-                  ; (do
-                  ;    (pprint in-vals)
-                  ;    (pprint ret-vals)
-                  ;    false))
               (nil? ret)))))
 
 (defn reorder
