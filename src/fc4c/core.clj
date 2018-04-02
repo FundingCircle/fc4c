@@ -82,9 +82,9 @@
               leaf-vals #(->> (tree-seq coll? all-vals %)
                               (filter (complement coll?))
                               flatten)
-              in-vals (->> (leaf-vals in) (filter (complement blank-nil-or-empty?)))
-              ret-vals (leaf-vals ret)]
-          (if (seq in-vals)
+              in-vals (->> (leaf-vals in) (filter (complement blank-nil-or-empty?)) set)
+              ret-vals (->> (leaf-vals ret) set)]
+          (if (seq in)
               (= in-vals ret-vals)
               (nil? ret)))))
 
