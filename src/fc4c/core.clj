@@ -68,7 +68,8 @@
   [in]
   (postwalk (fn [el]
               (if (map? el)
-                  (let [m (into {} (remove (comp blank-nil-or-empty? second) el))]
+                  (let [m (into (empty el) ; using empty to preserve ordered maps 
+                            (remove (comp blank-nil-or-empty? second) el))]
                     (when (seq m) m))
                   el))
             in))
@@ -76,17 +77,18 @@
 (s/fdef shrink
   :args (s/cat :in :fc4c/diagram)
   :ret :fc4c/diagram
-  :fn (fn [{{in :in} :args
-            ret :ret}]
-        (let [all-vals #(if (map? %) (vals %) %) ; works on maps or sequences
-              leaf-vals #(->> (tree-seq coll? all-vals %)
-                              (filter (complement coll?))
-                              flatten)
-              in-vals (->> (leaf-vals in) (filter (complement blank-nil-or-empty?)) set)
-              ret-vals (->> (leaf-vals ret) set)]
-          (if (seq in)
-              (= in-vals ret-vals)
-              (nil? ret)))))
+  :fn (s/and
+        (fn [{{in :in} :args, ret :ret}] (= (type in) (type ret)))
+        (fn [{{in :in} :args, ret :ret}]
+          (let [all-vals #(if (map? %) (vals %) %) ; works on maps or sequences
+                leaf-vals #(->> (tree-seq coll? all-vals %)
+                                (filter (complement coll?))
+                                flatten)
+                in-vals (->> (leaf-vals in) (filter (complement blank-nil-or-empty?)) set)
+                ret-vals (->> (leaf-vals ret) set)]
+            (if (seq in)
+                (= in-vals ret-vals)
+                (nil? ret))))))
 
 (defn reorder
   "Reorder a map as per a seq of keys.
