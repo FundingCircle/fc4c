@@ -274,7 +274,11 @@
   (-> (reorder-diagram d)
       (snap-to-grid 100 50)
       shrink)) ; must follow reorder-diagram because that tends to introduce new keys with nil values
-      
+
+(s/fdef process
+  :args (s/cat :in :fc4c/diagram)
+  :ret :fc4c/diagram)
+
 (defn stringify
   "Accepts a diagram as a map, converts it to a YAML string."
   [d]
