@@ -22,7 +22,7 @@
   ;; In other words, we’re using int-in rather than nat-int? because sometimes the generator for
   ;; nat-int? returns very very large integers, and those can sometimes blow up the functions
   ;; during generative testing.
-  (s/int-in 0 50000))
+  (s/int-in 0 50001))
 
 (s/def :fc4c/position :fc4c/coord-string)
 
