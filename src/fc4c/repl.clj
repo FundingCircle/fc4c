@@ -74,7 +74,7 @@
   nil)
 
 (defn stop
-  "Stop the goroutine started by start."
+  "Stop the goroutine started by wcb."
   []
   (offer! stop-chan true))
 
