@@ -4,8 +4,7 @@
              :as ed
              :refer [probably-diagram-yaml? process-file]])
   (:import [java.awt Toolkit]
-           [java.awt.datatransfer DataFlavor StringSelection])
-  (:refer-clojure :exclude [slurp spit]))
+           [java.awt.datatransfer DataFlavor StringSelection]))
 
 ; Suppress the Java icon from popping up and grabbing focus on MacOS.
 ; Found in a comment to this answer: https://stackoverflow.com/a/17544259/7012
@@ -21,7 +20,7 @@
 (def string-flavor (DataFlavor/stringFlavor))
 
 ;; based on code found at https://gist.github.com/Folcon/1167903
-(defn slurp []
+(defn cb-slurp []
   (try
     ;; We’re gonna check twice for the contents being a string because of
     ;; possible race conditions.
@@ -31,7 +30,7 @@
           (.getTransferData transferable string-flavor))))
     (catch java.lang.NullPointerException e nil)))
 
-(defn spit
+(defn cb-spit
   [s]
   {:pre [(string? s)]}
   (.setContents (clipboard) (StringSelection. s) nil))
@@ -41,12 +40,22 @@
   clipboard. If the contents of the clipboard are not a FC4 diagram, a RuntimeException is
   thrown."
   []
-  (let [contents (slurp)]
+  (let [contents (cb-slurp)]
     (if (probably-diagram-yaml? contents)
       (-> contents
           process-file
           ::ed/str-processed
-          spit)
+          cb-spit)
+      (throw (RuntimeException. "Not a FC4 diagram.")))))
+
+(defn process-file
+  [input-filename output-filename]
+  (let [contents (slurp input-filename)]
+    (if (probably-diagram-yaml? contents)
+      (->> contents
+           process-file
+           ::ed/str-processed
+           (spit output-filename))
       (throw (RuntimeException. "Not a FC4 diagram.")))))
 
 (def ^:private current-local-time-format
@@ -63,7 +72,7 @@
   (try
     (let [{main       ::ed/main-processed
            str-result ::ed/str-processed} (process-file contents)
-          _ (spit str-result)
+          _ (cb-spit str-result)
           {:keys [:type :scope]} main]
       (println (current-local-time-str) "-> processed" type "for" scope "with great success!")
       (flush)
@@ -99,7 +108,7 @@
   (poll! stop-chan)
 
   (go-loop [prior-contents nil]
-    (let [contents (slurp)
+    (let [contents (cb-slurp)
           process? (and (not= contents prior-contents)
                         (probably-diagram-yaml? contents))
           output (when process?
@@ -108,7 +117,7 @@
         (do (println "Stopped!")
             (flush)
             nil)
-        (let [contents (slurp)]
+        (let [contents (cb-slurp)]
           (<! (timeout 1000))
           (recur contents))))))
 
