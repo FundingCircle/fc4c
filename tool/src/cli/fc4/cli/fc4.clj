@@ -26,7 +26,10 @@
   ;;
   ;; TODO: Actually, now that I think about it, we should probably add a --help
   ;; universal option ASAP.
-  [first-arg & rest-args]
-  (if-let [f (get subcommands (keyword first-arg))]
-    (apply f rest-args)
-    (exit 1 (invalid-subcommand-message first-arg))))
+  [subcommand & rest-args]
+  (if-let [f (get subcommands (keyword subcommand))]
+    (do (apply f rest-args)
+        ;; I’m not sure why, but without this the render subcommand would delay
+        ;; the exit of the main command by about a minute. TODO: debug.
+        (System/exit 0))
+    (exit 1 (invalid-subcommand-message subcommand))))
