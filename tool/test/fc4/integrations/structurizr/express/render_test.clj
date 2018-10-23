@@ -1,7 +1,7 @@
 (ns fc4.integrations.structurizr.express.render-test
   (:require [fc4.integrations.structurizr.express.render :as r]
-            [clojure.java.io :as io :refer [file input-stream]]
-            [clojure.test :refer [deftest testing is]])
+            [clojure.java.io                             :as io :refer [file input-stream]]
+            [clojure.test                                       :refer [deftest testing is]])
   (:import  [java.io DataInputStream]
             [java.util Arrays]))
 
@@ -18,6 +18,7 @@
     (testing "rendering a Structurizr Express file"
       (let [dir "test/data/structurizr/express/"
             yaml (slurp (str dir "diagram_valid_cleaned.yaml"))
-            png-bytes (r/render yaml)
-            expected-bytes (file-to-byte-array (file (str dir "diagram_valid_cleaned.png")))]
-        (is (Arrays/equals png-bytes expected-bytes))))))
+            {:keys [::r/png-bytes ::r/stderr]} (r/render yaml)
+            expected-file (file (str dir "diagram_valid_cleaned.png"))
+            expected-bytes (file-to-byte-array expected-file)]
+        (is (Arrays/equals png-bytes expected-bytes) stderr)))))
