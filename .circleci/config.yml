@@ -20,12 +20,14 @@ jobs:
            path: ~/project
 
        - restore_cache:
+           name: Restore Clojure Dependencies (if cached)
            keys:
            - clj-deps-{{ checksum "deps.edn" }}
            # fallback to using the latest cache if no exact match is found
            - clj-deps-
 
        - restore_cache:
+           name: Restore Node Dependencies (if cached)
            keys:
            - node-deps-{{checksum "renderer/package.json"}}
            # fallback to using the latest cache if no exact match is found
@@ -37,11 +39,12 @@ jobs:
           command: clojure -R:test:test/coverage:lint -Stree
 
        - run:
-          name: Download Node.js Dependencies (if necessary)
+          name: Download Node Dependencies (if necessary)
           working_directory: ~/project/tool/renderer
           command: npm install
 
        - save_cache:
+           name: Save Clojure Dependencies (if changed)
            key: clj-deps-{{ checksum "deps.edn" }}
            paths:
            - .cpcache
@@ -49,6 +52,7 @@ jobs:
            - ~/.gitlibs
 
        - save_cache:
+           name: Save Node Dependencies (if changed)
            key: node-deps-{{checksum "renderer/package.json"}}
            paths:
            - ~/project/tool/renderer/node_modules
@@ -64,12 +68,14 @@ jobs:
            path: ~/project
 
        - restore_cache:
+           name: Restore Clojure Dependencies
            keys:
            - clj-deps-{{ checksum "deps.edn" }}
            # fallback to using the latest cache if no exact match is found
            - clj-deps-
 
        - restore_cache:
+           name: Restore Node Dependencies
            keys:
            - node-deps-{{checksum "renderer/package.json"}}
            # fallback to using the latest cache if no exact match is found
