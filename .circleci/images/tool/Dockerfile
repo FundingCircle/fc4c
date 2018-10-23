@@ -4,38 +4,28 @@
 FROM node:10.12-alpine
 
 LABEL maintainer="Avi Flax <avi.flax@fundingcircle.com>"
-LABEL description="Node and Clojure on Alpine."
+LABEL description="Node, Clojure, and Chromium on Alpine"
 
 ENV JRE_VERSION=8.181.13-r0
 ENV CLOJURE_VERSION=1.9.0.394
 
 WORKDIR /tmp
 
+RUN apk update
+
 # Dependencies of Clojure.
-#
-# We might not really need rlwrap because it’s really only needed for the REPL,
-# but including it anyway just in case we need to use the REPL in the container.
-#
-# OTOH, I just noticed this:
-# https://docs.docker.com/develop/develop-images/dockerfile_best-practices/#dont-install-unnecessary-packages
-# which says:
-#
-# > To reduce complexity, dependencies, file sizes, and build times, avoid
-# > installing extra or unnecessary packages just because they might be “nice to
-# > have.” For example, you don’t need to include a text editor in a database
-# > image.
-#
-# ...so. Hmm.
-#
 # NB: the OpenJDK image published by Docker the company does a few things beyond
 # just apk adding the openjdk-jre package; those things might also be necessary;
 # not sure. See
 # https://github.com/docker-library/openjdk/blob/master/8/jre/alpine/Dockerfile
-# RUN echo '@testing http://dl-cdn.alpinelinux.org/alpine/edge/testing' >> /etc/apk/repositories
-RUN apk add --update --no-cache openjdk8-jre=$JRE_VERSION bash curl
-# rlwrap@testing
+RUN apk -q --no-progress add --no-cache openjdk8-jre=$JRE_VERSION bash curl
 
 # Clojure itself
-RUN wget https://download.clojure.org/install/linux-install-$CLOJURE_VERSION.sh \
+RUN wget -q https://download.clojure.org/install/linux-install-$CLOJURE_VERSION.sh \
       && chmod +x linux-install-$CLOJURE_VERSION.sh \
       && ./linux-install-$CLOJURE_VERSION.sh
+
+# Add the dependencies of the Chromium that Puppeteer downloads for its own use.
+# We don’t actually need this Chromium, only its dependencies.
+RUN apk -q --no-progress add --no-cache udev ttf-freefont chromium \
+    && apk -q --no-progress del chromium
