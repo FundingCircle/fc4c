@@ -37,7 +37,10 @@
      ;; supported values (:namespaces and `true`) and they were both
      ;; significantly slower. For more see
      ;; https://github.com/weavejester/eftest/#multithreading
-     :multithread? :vars}))
+     :multithread? :vars
+
+     ;; Our test suite just takes too damn long.
+     :fail-fast? true}))
 
 (defn run-tests
   []
