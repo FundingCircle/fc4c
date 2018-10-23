@@ -25,10 +25,14 @@
 (s/def ::yaml-string string?)
 (s/def ::png-bytes bytes?)
 (s/def ::stderr string?)
+(s/def ::result (s/keys :req [::png-bytes ::stderr]))
 
+; This spec is here mainly for documentation and instrumentation. I don’t
+; recommend using it for generative testing, mainly because rendering is
+; currently extremely slow (~12s on my system).
 (s/fdef render
         :args ::yaml-string
-        :ret  (s/keys :req [::png-bytes ::stderr]))
+        :ret  ::result)
 
 (comment
   (use 'clojure.java.io 'clojure.java.shell)
