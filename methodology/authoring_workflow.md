@@ -1,6 +1,6 @@
 # 5. The Authoring Workflow « The FC4 Methodology
 
-Please note: the current workflow is _temporary._ We know it’s highly manual and that that’s not efficient or sustainable. But it’s sufficient for now, for the current pilot/prototyping phase of this methodology.
+Please note: this workflow is subject to change. We know it’s overly complex, and we hope to streamline it soon.
 
 ----
 
@@ -8,7 +8,7 @@ Once a basic YAML file has been created with some initial contents, the basic au
 
 1. Create a new git branch in your local instance of [the diagram repository](repository.md)
 1. In your text editor: either create a new diagram source file or open an existing diagram source file
-1. In a terminal, in your `fc4` working dir, run `cd tool && ./wcb`
+1. In a terminal, in your `fc4` working dir, run `cd tool && ./fc4 wcb`
    1. This starts the tool in a mode wherein it will watch your clipboard for diagram source YAML and process (clean up) that YAML when it sees that it’s been changed.
 1. In your text editor, add/revise elements and relationships, then select-all and cut the diagram source from your editor into your system clipboard.
    1. This will cause fc4-tool to process the contents of your clipboard.
@@ -22,9 +22,8 @@ Once a basic YAML file has been created with some initial contents, the basic au
 1. Continue to cut and past the diagram source between your text editor and SE, using SE to preview and adjust the rendered diagram, while fc4-tool cleans up the diagram as you work.
 1. When you’re ready to wrap up:
    1. Paste the diagram source into your text editor and save the YAML file.
-   1. Paste the diagram source into SE, hit tab to re-render the diagram, then click the _Export to PNG_ button in the toolbar.
-   1. The rendered diagram will open in a new browser tab.
-   1. Save the rendered diagram to a PNG file next to the YAML file and with the same name as the YAML file, except for the filename extension of course.
+   1. In your terminal, hit `ctrl-c` to stop `fc4 wcb`
+   1. Run `./fc4 render <path-to-yaml-file>` to generate a `.png` file alongside the `.yaml` file
 1. Use your git UI of choice to commit your changes.
 1. Push your local changes to the origin repository regularly.
 1. When you’re ready to submit your changes for review, open a
@@ -34,9 +33,7 @@ Once a basic YAML file has been created with some initial contents, the basic au
 
 ----
 
-That’s pretty much it, right now.
-
-Soon we’ll start looking into less manual, more automated workflows for authoring and rendering the diagrams.
+That’s pretty much it, right now. But we hope to streamline this workflow soon.
 
 ----
 

@@ -1,6 +1,6 @@
 # fc4-tool
 
-A tool for reorganizing, restructuring, and reformatting
+A tool for reorganizing, restructuring, reformatting, and rendering
 [FC4](https://fundingcircle.github.io/fc4-framework/) diagrams.
 
 [![CircleCI](https://circleci.com/gh/FundingCircle/fc4-framework.svg?style=shield)](https://circleci.com/gh/FundingCircle/fc4-framework)
@@ -16,9 +16,20 @@ As explained in
 >
 > So fc4-tool processes the YAML: cleans it up, applies a stable sort to all properties, removes empty properties, etc — so as to ensure that the changes applied in each revision are very small and specific and all extraneous changes are filtered out. This will hopefully enable effective peer review of revisions to the diagrams.
 >
-> fc4-tool also “snaps” the elements and vertices in a diagram to a virtual grid.
+> fc4-tool also:
+>
+> * “Snaps” the elements and vertices in a diagram to a virtual grid
+> * Renders diagrams
 
 ## Setup
+
+### Quick Setup on Mac OS X
+
+1. Make sure [Homebrew](https://brew.sh/) is installed (try running `brew`)
+1. Clone [this repo](https://github.com/FundingCircle/fc4-framework) and `cd` into it
+1. Run: `brew install clojure node && cd tool && bin/download-all-deps`
+
+### Manual Setup
 
 1. Install Clojure as per [this guide](https://clojure.org/guides/getting_started)
    1. This project uses the new Clojure CLI (`clj`) and
@@ -28,33 +39,26 @@ As explained in
       not have these tools installed. Try `which clj` to check, and if that prints a blank line,
       try running the appropriate
       [installer](https://clojure.org/guides/getting_started#_clojure_installer_and_cli_tools).
-2. Clone [this repo](https://github.com/FundingCircle/fc4-framework)
-3. `cd` into the repo and then `cd tool`
-4. To install the dependencies, run: `clojure -Sdescribe'`
+1. Install [Node.js](https://nodejs.org/) (used for rendering diagrams)
+1. Clone [this repo](https://github.com/FundingCircle/fc4-framework)
+1. `cd` into the repo and then `cd tool`
+1. To install the dependencies run `bin/download-all-deps`
 
 ## Basic Usage
 
-1. Have `clj` installed ([guide](https://clojure.org/guides/getting_started))
-1. Run in your shell, from the root of the repo: `cd tool && ./wcb`
+### Editing and Rendering Diagrams
+
+1. Run in your shell, from the root of the repo: `cd tool && ./fc4 wcb`
+1. Copy-and-paste YAML diagram definitions between [Structurizr Express](https://structurizr.com/help/express) (SE) and an open file in your text editor.
+1. When done, ensure the YAML in your editor is the latest version, copy-and-pasting from SE one last time if necessary, then save the file.
+1. Switch to your terminal and hit ctrl-c to stop `fc4 wcb`
+1. Run `./fc4 render <path-to-yaml-file>` to generate a `.png` file alongside the `.yaml` file
+1. Commit both files
 
 ## Full Usage Workflow
 
-As explained in [The Authoring Workflow](https://fundingcircle.github.io/fc4-framework/methodology/authoring_workflow.html) section of
-[the FC4 Methodology](https://fundingcircle.github.io/fc4-framework/methodology/):
-
-> 1. In your text editor: either create a new diagram source file or open an existing diagram source file
-> 1. In a terminal, in your `fc4` working dir, run `cd tool && ./wcb`
->    1. This starts the tool in a mode wherein it will watch your clipboard for diagram source YAML and process (clean up) that YAML when it sees that it’s been changed.
-> 1. In your text editor, add/revise elements and relationships, then select-all and cut the diagram source from your editor into your system clipboard.
->    1. This will cause fc4-tool to process the contents of your clipboard.
-> 1. Switch to [Structurizr Express](https://structurizr.com/help/express) (SE) » paste the source into the YAML textarea » press tab to blur the textarea
->    1. SE will either render the diagram, or display a red error indicator in its toolbar
->    2. If SE shows its red error indicator, click the indicator button to bring up a dialog listing the errors
-> 1. Use SE to arrange the elements and edges as desired
-> 1. Cut the diagram source from the SE YAML textarea into your system clipboard.
->    1. This will cause fc4-tool to process the contents of your clipboard.
-> 1. Paste the diagram source back into the SE YAML textarea so as to re-render the diagram, now that the elements have been “snapped” to a virtual grid.
-> 1. Continue to cut and past the diagram source between your text editor and SE, using SE to preview and adjust the rendered diagram, while fc4-tool cleans up the diagram as you work.
+Please see [The Authoring Workflow](https://fundingcircle.github.io/fc4-framework/methodology/authoring_workflow.html) section of
+[the FC4 Methodology](https://fundingcircle.github.io/fc4-framework/methodology/).
 
 ## Running the Tests
 
@@ -67,15 +71,15 @@ As explained in [The Authoring Workflow](https://fundingcircle.github.io/fc4-fra
 Run this in your shell:
 
 ```bash
-docker run --rm `docker build -q .`
+bin/run bin/tests
 ```
 
 ### Without Docker
 
 If you’re old-school and prefer to run tests on bare metal:
 
-1. Have `clojure` installed ([guide](https://clojure.org/guides/getting_started))
-1. Run in your shell: `clojure -A:test:test/run`
+1. Have all the dependencies installed as per [Setup](#setup)
+1. Run in your shell: `bin/tests`
 
 ## Starting a REPL for Dev/Test
 
@@ -104,16 +108,14 @@ via [cljfmt-runner](https://github.com/JamesLaverack/cljfmt-runner).
     them into the git index. This way you can review the changes that were
     applied and decide which to keep and which to discard.
 
-We’ll soon be integrating a lint run into our CI builds so they’ll fail if any
-source code is formatted incorrectly. Coming soon!
-
 ## Contributors
 
-* @99-not-out
-* @arrdem
-* @matthias-margush
-* @sgerrand
-* @timgilbert
+* [99-not-out](https://github.com/99-not-out)
+* [arrdem](https://github.com/arrdem)
+* [matthias-margush](https://github.com/matthias-margush)
+* [sgerrand](https://github.com/sgerrand)
+* [sldblog](https://github.com/sldblog)
+* [timgilbert](https://github.com/timgilbert)
 
 Thank you all!
 

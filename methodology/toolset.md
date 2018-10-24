@@ -2,11 +2,44 @@
 
 The current toolset for authoring and editing FC4 diagrams is:
 
-| Tool                                                         | Uses                                                         |
-| ------------------------------------------------------------ | ------------------------------------------------------------ |
-| Any text editor                                              | Creating the diagram files; authoring/editing the semantic contents of the diagrams: the elements, relationships, etc |
-| [Structurizr Express](https://structurizr.com/help/express)  | Graphical authoring/editing the positioning of the elements; rendering the diagrams |
-| [fc4-tool][fc4-tool] | Reformatting and normalizing the source of the diagrams so they’re diffable and easier to edit; snapping elements to a virtual grid |
+<table>
+  <thead>
+    <tr>
+      <th align="left">Tool</th>
+      <th align="left">Uses</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th align="left">Any text editor</th>
+      <td>
+        <ul>
+          <li>Creating the diagram files</li>
+          <li>Authoring/editing the semantic contents of the diagrams: the elements, relationships, etc</li>
+        </ul>
+      </td>
+    </tr>
+    <tr>
+      <th align="left"><a href="https://structurizr.com/help/express">Structurizr Express</a></th>
+      <td>
+        <ul>
+          <li>Graphical authoring/editing the positioning of the elements</li>
+          <li>Rendering the diagrams</li>
+        </ul>
+      </td>
+    </tr>
+    <tr>
+      <th align="left"><a href="#fc4-tool">fc4-tool</a></th>
+      <td>
+        <ul>
+          <li>Reformatting and normalizing the source of the diagrams so they’re diffable and easier to edit</li>
+          <li>Snapping elements to a virtual grid</li>
+          <li>Rendering the diagrams</li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
 
 ## fc4-tool
 
@@ -14,9 +47,12 @@ The current toolset for authoring and editing FC4 diagrams is:
 
 So fc4-tool processes the YAML: cleans it up, applies a stable sort to all properties, removes empty properties, etc — so as to ensure that the changes applied in each revision are very small and specific and all extraneous changes are filtered out. This will hopefully enable effective peer review of revisions to the diagrams.
 
-fc4-tool also “snaps” the elements and vertices in a diagram to a virtual grid.
+fc4-tool also:
 
-The functionality of fc4-tool may expand over time to include additional features to assist with authoring and maintaining FC4 diagrams.
+* “Snaps” the elements and vertices in a diagram to a virtual grid
+* Renders diagrams
+
+The functionality of fc4-tool will expand over time to include additional features to assist with authoring and maintaining FC4 diagrams.
 
 ----
 
