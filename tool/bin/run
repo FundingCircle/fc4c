@@ -1,0 +1,12 @@
+#!/usr/bin/env sh
+
+# Run commands using ../Dockerfile.test
+# e.g. from <repo-root>/tool:  bin/run bin/tests ... not super elegant but what
+# can I do.
+# alternatively:
+# $ export PATH=$PATH:$(pwd)/bin
+# $ run bin/tests
+
+set -ex
+docker build -f Dockerfile.test -t fc4-test .
+docker run --rm fc4-test "$@"

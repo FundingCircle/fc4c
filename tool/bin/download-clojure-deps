@@ -1,0 +1,6 @@
+#!/bin/sh
+
+set -ex
+
+# Clojure automatically downloads deps if necessary
+clojure -R:test:test/coverage:lint -Stree

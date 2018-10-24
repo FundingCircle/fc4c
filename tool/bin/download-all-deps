@@ -1,0 +1,6 @@
+#!/bin/sh
+
+set -ex
+
+./download-clojure-deps
+./download-node-deps

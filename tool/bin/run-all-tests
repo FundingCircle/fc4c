@@ -1,4 +1,0 @@
-#!/usr/bin/env sh
-
-docker build -f Dockerfile.test -t fc4-test .
-docker run --rm fc4-test

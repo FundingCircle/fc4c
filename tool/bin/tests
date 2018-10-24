@@ -1,0 +1,7 @@
+#!/usr/bin/env sh
+set -ex
+
+# The max heap size is set to 2GB because I’ve seen OOM errors at 1GB and below. (JDK 8
+# defaults to setting the max heap to ¼ of the total RAM, and CI containers frequently have
+# <= 4GB RAM.)
+clojure -J-Xmx2g -A:test:test/run

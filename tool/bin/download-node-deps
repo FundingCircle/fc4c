@@ -1,0 +1,10 @@
+#!/bin/sh
+
+set -ex
+
+# We’re using the Chromium installed by APK as recommended here:
+#   https://github.com/GoogleChrome/puppeteer/blob/master/docs/troubleshooting.md#running-on-alpine
+export PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
+
+# npm install automaticaly downloads deps if necessary
+cd renderer && npm install

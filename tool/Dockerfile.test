@@ -7,15 +7,17 @@ LABEL maintainer="Avi Flax <avi.flax@fundingcircle.com>"
 
 WORKDIR /tool
 
-# Copy deps.edn then invoke `clojure` just to download the deps, separately from
-# and prior to copying the app code so that we don’t have to re-download deps
-# every time the app code changes.
-COPY deps.edn ./
-RUN clojure -R:test -Stree
+# Copy Clojure’s deps.edn and Node’s package files then download the deps
+# separately from and prior to copying the app code so that we don’t have to
+# re-download deps every time the app code changes.
 
-# Same deal for Node dependencies for the renderer
+COPY deps.edn ./
+COPY bin/download-clojure-deps bin/
+RUN bin/download-clojure-deps
+
 COPY renderer/package*.json ./renderer/
-RUN cd renderer && npm install
+COPY bin/download-node-deps bin/
+RUN bin/download-node-deps
 
 # rlwrap is handy in case we need to run a REPL in a container
 RUN echo "@testing http://nl.alpinelinux.org/alpine/edge/testing" >> /etc/apk/repositories
@@ -23,8 +25,3 @@ RUN apk add --no-cache rlwrap@testing
 
 # Now copy *all* the code.
 COPY . ./
-
-# Set command that runs the tests
-# The max heap size is set to 2GB because I’ve seen OOM errors at 1GB and below. (JDK 8 defaults to
-# setting the max heap to ¼ of the total RAM, and containers frequently have <= 4GB RAM.)
-CMD ["clojure", "-J-Xmx2g", "-A:test:test/run"]
