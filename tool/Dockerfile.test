@@ -2,11 +2,10 @@
 # using the tool because the tool requires access to your clipboard, which is
 # very tricky from within a Docker container.
 
-FROM clojure:tools-deps-alpine
-
+FROM quay.io/aviflax/clojure-node-chromium:clojure-1.9.0.394_node-10.12
 LABEL maintainer="Avi Flax <avi.flax@fundingcircle.com>"
 
-WORKDIR /code
+WORKDIR /tool
 
 # Copy deps.edn then invoke `clojure` just to download the deps, separately from
 # and prior to copying the app code so that we don’t have to re-download deps
@@ -14,9 +13,18 @@ WORKDIR /code
 COPY deps.edn ./
 RUN clojure -R:test -Stree
 
-# Now copy all the app code.
+# Same deal for Node dependencies for the renderer
+COPY renderer/package*.json ./renderer/
+RUN cd renderer && npm install
+
+# rlwrap is handy in case we need to run a REPL in a container
+RUN echo "@testing http://nl.alpinelinux.org/alpine/edge/testing" >> /etc/apk/repositories
+RUN apk add --no-cache rlwrap@testing
+
+# Now copy *all* the code.
 COPY . ./
 
+# Set command that runs the tests
 # The max heap size is set to 2GB because I’ve seen OOM errors at 1GB and below. (JDK 8 defaults to
 # setting the max heap to ¼ of the total RAM, and containers frequently have <= 4GB RAM.)
-ENTRYPOINT ["clojure", "-J-Xmx2g", "-A:test:test/run"]
+CMD ["clojure", "-J-Xmx2g", "-A:test:test/run"]
