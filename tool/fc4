@@ -1,2 +1,20 @@
-#!/bin/sh
+#!/bin/bash
+
+set -e
+
+# Apparently when people execute scripts in bash the script gets executed with
+# the working directory being the current directory of the user’s shell. Which
+# of course would mean that `clojure` would be unable to find the source code
+# to run. So cding into the same dir as the script fixes that. It does however
+# mean that all the file paths passed to e.g. `fc4 render <path> <path> ...`
+# need to be absolute, which is a little annoying.
+#
+# TODO: figure out a way for this to support relative paths.
+#
+# One idea: the script could pass the user’s cwd to fc4 as a command-line
+# argument, something like `--root-dir`, so the subcommands that expect file
+# paths as args could resolve relative paths.
+SCRIPT_DIR="${BASH_SOURCE%/*}"
+cd "$SCRIPT_DIR"
+
 clojure --main fc4.cli.fc4 "$@"
