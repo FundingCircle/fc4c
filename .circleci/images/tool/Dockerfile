@@ -33,4 +33,4 @@ RUN wget -q https://download.clojure.org/install/linux-install-$CLOJURE_VERSION.
 # think rm -Rf /usr/lib/chromium should work, but I had some trouble with that.
 # I’m not sure why; it could be my lack of experience working with remote Docker
 # repositories. Might be worth trying again at some point.
-RUN apk -q --no-progress add --no-cache udev ttf-freefont chromium
+RUN apk -q --no-progress add --no-cache udev ttf-freefont libc6-compat chromium

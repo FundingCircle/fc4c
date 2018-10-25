@@ -41,6 +41,8 @@ jobs:
        - run:
           name: Download Node Dependencies (if necessary)
           working_directory: ~/project/tool/renderer
+          environment:
+            PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: true
           command: npm install
 
        - save_cache:
