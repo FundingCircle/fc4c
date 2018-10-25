@@ -26,11 +26,13 @@
         (is (s/valid? ::r/result result) (s/explain-str ::r/result result))
 
         (is (Arrays/equals png-bytes expected-bytes)
-            (let [binary-spit (fn [path data]
-                                (with-open [out (io/output-stream (file path))]
-                                  (.write out data)))
-                  actual-file-path (str dir "diagram_valid_cleaned_actual.png")]
-              (binary-spit actual-file-path png-bytes)
+            ;; NB: apparently `is` evaluates this `msg` arg eagerly, so it’s
+            ;; evaluated even if the assertion is true. This means that even
+            ;; when the test passes the “expected” file is written out to the
+            ;; filesystem. So TODO: maybe we should do something about this.
+            (let [actual-file-path (str dir "diagram_valid_cleaned_actual.png")]
+              (with-open [out (io/output-stream (file actual-file-path))]
+                (.write out png-bytes))
               (str stderr
                    "\nfile with “expected” PNG: " expected-file
                    "\nactual PNG written to " actual-file-path)))))))
