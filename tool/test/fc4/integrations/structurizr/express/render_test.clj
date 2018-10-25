@@ -22,5 +22,15 @@
             {:keys [::r/png-bytes ::r/stderr] :as result} (r/render yaml)
             expected-file (file (str dir "diagram_valid_cleaned.png"))
             expected-bytes (file-to-byte-array expected-file)]
+
         (is (s/valid? ::r/result result) (s/explain-str ::r/result result))
-        (is (Arrays/equals png-bytes expected-bytes) stderr)))))
+
+        (is (Arrays/equals png-bytes expected-bytes)
+            (let [binary-spit (fn [path data]
+                                (with-open [out (io/output-stream (file path))]
+                                  (.write out data)))
+                  actual-file-path (str dir "diagram_valid_cleaned_actual.png")]
+              (binary-spit actual-file-path png-bytes)
+              (str stderr
+                   "\nfile with “expected” PNG: " expected-file
+                   "\nactual PNG written to " actual-file-path)))))))
