@@ -6,12 +6,12 @@ It builds on [the C4 Model](https://c4model.com/) and [Structurizr Express](http
 
 It has two components:
 
-* [the methodology](methodology/README.md)
-* [fc4-tool](tool/README.md)
+* [the methodology](methodology/)
+* [fc4-tool](tool/)
 
 It originated at and is maintained by [Funding Circle](https://engineering.fundingcircle.com/).
 
-To get started, we recommend reading [the methodology](methodology/README.md). If you have any questions or feedback please [create an issue](https://github.com/FundingCircle/fc4-framework/issues/new) and one of the maintainers will get back to you shortly.
+To get started, we recommend reading [the methodology](methodology/). If you have any questions or feedback please [create an issue](https://github.com/FundingCircle/fc4-framework/issues/new) and one of the maintainers will get back to you shortly.
 
 ## The Name
 
