@@ -9,4 +9,10 @@
 
 set -ex
 docker build -f Dockerfile.test -t fc4-test .
-docker run --rm fc4-test "$@"
+
+# You might think this command should include --rm so as not to litter the system with containers,
+# and that’d be reasonable, BUT it can also make debugging harder. Sometimes when the tests fail
+# they write out files that are meant to help with debugging; if the container is deleted as soon
+# as it exits then those files are gone. So you might want to run `docker container prune` every
+# once in awhile ;)
+docker run fc4-test "$@"
