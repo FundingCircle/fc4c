@@ -11,7 +11,7 @@ version: 2
 jobs:
    tool_deps:
      docker:
-       - image: quay.io/aviflax/clojure-node-chromium:clojure-1.9.0.394_node-10.12
+       - image: quay.io/fundingcircle/clojure-node-chromium@sha256:84a563c327d900cbfacbeabf41f941a2395ca55835135f639e8b5d656b8d7c80
 
      working_directory: ~/project/tool
 
@@ -57,7 +57,7 @@ jobs:
 
    tool_test:
      docker:
-       - image: quay.io/aviflax/clojure-node-chromium:clojure-1.9.0.394_node-10.12
+       - image: quay.io/fundingcircle/clojure-node-chromium@sha256:84a563c327d900cbfacbeabf41f941a2395ca55835135f639e8b5d656b8d7c80
 
      working_directory: ~/project/tool
 
@@ -95,7 +95,7 @@ jobs:
 
    tool_lint:
      docker:
-       - image: quay.io/aviflax/clojure-node-chromium:clojure-1.9.0.394_node-10.12
+       - image: quay.io/fundingcircle/clojure-node-chromium@sha256:84a563c327d900cbfacbeabf41f941a2395ca55835135f639e8b5d656b8d7c80
 
      working_directory: ~/project/tool
 

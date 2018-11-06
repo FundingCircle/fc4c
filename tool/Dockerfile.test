@@ -2,7 +2,7 @@
 # using the tool because the tool requires access to your clipboard, which is
 # very tricky from within a Docker container.
 
-FROM quay.io/aviflax/clojure-node-chromium:clojure-1.9.0.394_node-10.12
+FROM quay.io/fundingcircle/clojure-node-chromium@sha256:84a563c327d900cbfacbeabf41f941a2395ca55835135f639e8b5d656b8d7c80
 LABEL maintainer="Avi Flax <avi.flax@fundingcircle.com>"
 
 WORKDIR /tool
