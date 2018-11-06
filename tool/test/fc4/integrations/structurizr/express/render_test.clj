@@ -68,6 +68,15 @@
       (/ (* 100.0 it) max-diff)
       (round-dec 4 it))))
 
+(def max-allowable-image-difference
+  ;; This threshold might seem low, but the diffing algorithm is
+  ;; giving very low results for some reason. This threshold seems
+  ;; to be sufficient to make the random watermark effectively ignored
+  ;; while other, more significant changes (to my eye) seem to be
+  ;; caught. Still, this is pretty unscientific, so it might be worth
+  ;; looking into making this more precise and methodical.
+  0.005)
+
 (deftest render
   (testing "happy paths"
     (testing "rendering a Structurizr Express file"
@@ -80,19 +89,9 @@
             difference (->> [actual-bytes expected-bytes]
                             (map bytes->buffered-image)
                             (map #(resize % 1000 1000))
-                            (reduce image-diff))
-
-            ;; This threshold might seem low, but the diffing algorithm is
-            ;; giving very low results for some reason. This threshold seems
-            ;; to be sufficient to make the random watermark effectively ignored
-            ;; while other, more significant changes (to my eye) seem to be
-            ;; caught. Still, this is pretty unscientific, so it might be worth
-            ;; looking into making this more precise and methodical.
-            threshold 0.003]
-
+                            (reduce image-diff))]
         (is (s/valid? ::r/result result) (s/explain-str ::r/result result))
-
-        (is (<= difference threshold)
+        (is (<= difference max-allowable-image-difference)
             ;; NB: below in addition to returning a message we write the actual
             ;; bytes out to the file system, to help with debugging. But
             ;; apparently `is` evaluates this `msg` arg eagerly, so it’s
@@ -107,6 +106,6 @@
                    "Images are "
                    difference
                    " different, which is higher than the threshold of "
-                   threshold
+                   max-allowable-image-difference
                    "\n“expected” PNG written to:" (.getPath expected-debug-fp)
                    "\n“actual” PNG written to:" (.getPath actual-debug-fp))))))))
