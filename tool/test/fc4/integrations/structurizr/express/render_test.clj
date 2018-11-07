@@ -10,103 +10,103 @@
             [clojure.java.io                             :as io :refer [file input-stream]]
             [clojure.spec.alpha                          :as s]
             [clojure.test                                       :refer [deftest testing is]]
-            [mikera.image.filters                               :refer [contrast]])
-  (:import  [java.awt Color Toolkit]
-            [java.awt.image BufferedImage FilteredImageSource RGBImageFilter]
-            [java.io ByteArrayInputStream ByteArrayOutputStream DataInputStream]
-            [java.util Arrays]
+            [image-resizer.core :refer [resize]])
+  (:import  [java.awt Color]
+            [java.awt.image BufferedImage]
+            [java.io ByteArrayInputStream DataInputStream]
             [javax.imageio ImageIO]))
 
-(defn file->bytes
-  "Copied from https://stackoverflow.com/a/29640320/7012"
-  [^java.io.File file]
-  (let [result (byte-array (.length file))]
+(defn binary-slurp
+  "Based on https://stackoverflow.com/a/29640320/7012"
+  [file-or-file-path]
+  (let [file (file file-or-file-path) ; no-op if the value is already a File
+        result (byte-array (.length file))]
     (with-open [in (DataInputStream. (input-stream file))]
       (.readFully in result))
     result))
-
-(def toolkit (Toolkit/getDefaultToolkit))
-(def watermark-color (Color. 0.99 0.99 0.99))
-(def white-rgb (.getRGB Color/white))
-
-(def watermark-filter
-  (proxy
-    [RGBImageFilter]
-    []
-    (filterRGB [_x _y rgb]
-      ; (let [color-vals (-> (Color. rgb) (.getRGBColorComponents nil))]
-        ; (if (every? #(> % 0.8) color-vals)
-          white-rgb
-          ; rgb
-          )))
-          ;))
-
-(defn image->buffered-image [image]
-  (if (instance? BufferedImage image)
-    image
-    (let [buffered-image (BufferedImage. (.getWidth image nil)
-                                         (.getHeight image nil)
-                                         BufferedImage/TYPE_INT_ARGB)]
-      (doto (.createGraphics buffered-image)
-            (.drawImage image 0 0 nil)
-            (.dispose))
-      buffered-image)))
-
-(defn bytes->buffered-image [bytes]
-  (ImageIO/read (ByteArrayInputStream. bytes)))
-
-(defn image->bytes [image]
-  (with-open [baos (ByteArrayOutputStream.)]
-    (ImageIO/write (image->buffered-image image) "png" baos)
-    (.toByteArray baos)))
-
-(defn remove-watermark [img-bytes]
-  (let [in-image (ImageIO/read (input-stream img-bytes))
-        source (FilteredImageSource. (.getSource in-image) watermark-filter)
-        out-image (.createImage toolkit source)]
-    (image->bytes out-image)))
 
 (defn binary-spit [f data]
   (with-open [out (io/output-stream (file f))]
     (.write out data)))
 
-(defn adjust-contrast [ratio image-bytes]
-  (-> (bytes->buffered-image image-bytes)
-      ((contrast ratio))
-      (image->bytes)))
+(defn bytes->buffered-image [bytes]
+  (ImageIO/read (ByteArrayInputStream. bytes)))
 
 (defn temp-png-file [basename] (java.io.File/createTempFile basename ".png"))
+
+(defn pixel-diff
+  "Ported from https://rosettacode.org/wiki/Percentage_difference_between_images#Java"
+  [a b]
+  (let [a-color-components (.getRGBColorComponents (Color. a) nil)
+        b-color-components (.getRGBColorComponents (Color. b) nil)]
+    (->> (map - a-color-components b-color-components)
+         (map #(Math/abs %))
+         (reduce +))))
+
+(defn image-pixels
+  [^BufferedImage img]
+  (-> img (.getRaster) (.getDataBuffer) (.getData)))
+
+(defn round-dec
+  "Rounds up, e.g. 0.001 rounded to two places will yield 0.01."
+  [places d]
+  (-> (bigdec d)
+      (.setScale places BigDecimal/ROUND_CEILING)
+      (double)))
+
+(defn image-diff
+  "Ported from https://rosettacode.org/wiki/Percentage_difference_between_images#Java"
+  [^BufferedImage a ^BufferedImage b]
+  (let [width   (.getWidth a)
+        height  (.getHeight a)
+        max-diff (* 3 255 width height)]
+    (when (or (not= width (.getWidth b))
+              (not= height (.getHeight b)))
+      (throw (Exception. "Images must have the same dimensions!")))
+    (as-> (map pixel-diff (image-pixels a) (image-pixels b)) it
+      (reduce + it)
+      (/ (* 100.0 it) max-diff)
+      (round-dec 4 it))))
 
 (deftest render
   (testing "happy paths"
     (testing "rendering a Structurizr Express file"
-      ;; NB: this approach of blowing out the image contrast and then checking
-      ;; whether the images are then *exactly* identical, byte-for-byte, is not
-      ;; great. For one thing, it removes light lines and fills, and it’d be
-      ;; better to actually check those. So:
-      ;; TODO: compare image *difference* and consider anything 90+% similar to
-      ;; be equivalent.
-      (let [blow-out (partial adjust-contrast 5.0)
-            dir "test/data/structurizr/express/"
+      (let [dir "test/data/structurizr/express/"
             yaml (slurp (str dir "diagram_valid_cleaned.yaml"))
             {:keys [::r/png-bytes ::r/stderr] :as result} (r/render yaml)
+            actual-bytes png-bytes
+            expected-bytes (binary-slurp (str dir "diagram_valid_cleaned_expected.png"))
 
-            actual-bytes (blow-out png-bytes)
-            expected-file (file (str dir "diagram_valid_cleaned_expected.png"))
-            expected-bytes (-> (file->bytes expected-file)
-                               (blow-out))]
+            difference (->> [actual-bytes expected-bytes]
+                            (map bytes->buffered-image)
+                            (map #(resize % 1000 1000))
+                            (reduce image-diff))
+
+            ;; This threshold might seem low, but the diffing algorithm is
+            ;; giving very low results for some reason. This threshold seems
+            ;; to be sufficient to make the random watermark effectively ignored
+            ;; while other, more significant changes (to my eye) seem to be
+            ;; caught. Still, this is pretty unscientific, so it might be worth
+            ;; looking into making this more precise and methodical.
+            threshold 0.003]
 
         (is (s/valid? ::r/result result) (s/explain-str ::r/result result))
 
-        (is (Arrays/equals actual-bytes expected-bytes)
+        (is (<= difference threshold)
             ;; NB: below in addition to returning a message we write the actual
             ;; bytes out to the file system, to help with debugging. But
             ;; apparently `is` evaluates this `msg` arg eagerly, so it’s
             ;; evaluated even if the assertion is true. This means that even
             ;; when the test passes the “expected” file is written out to the
             ;; filesystem. So TODO: maybe we should do something about this.
-            (let [actual-file (temp-png-file "diagram_valid_cleaned_actual.png")]
-              (binary-spit actual-file actual-bytes)
+            (let [expected-debug-fp (temp-png-file "rendered_expected.png")
+                  actual-debug-fp (temp-png-file "rendered_actual.png")]
+              (binary-spit expected-debug-fp expected-bytes)
+              (binary-spit actual-debug-fp actual-bytes)
               (str stderr
-                   "\nfile with “expected” PNG: " expected-file
-                   "\nactual PNG written to " (.getPath actual-file))))))))
+                   "Images are "
+                   difference
+                   " different, which is higher than the threshold of "
+                   threshold
+                   "\n“expected” PNG written to:" (.getPath expected-debug-fp)
+                   "\n“actual” PNG written to:" (.getPath actual-debug-fp))))))))

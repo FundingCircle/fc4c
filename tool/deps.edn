@@ -20,7 +20,7 @@
            :test          {:extra-paths ["test" "src/test_utils"]
                            :extra-deps  {org.clojure/test.check     {:mvn/version "0.10.0-alpha3"}
                                          eftest                     {:mvn/version "0.5.3"}
-                                         net.mikera/imagez          {:mvn/version "0.12.0"}}}
+                                         image-resizer              {:mvn/version "0.1.10"}}}
 
            :test/run      {:main-opts   ["-m" "fc4.test-runner.runner"]}
 
