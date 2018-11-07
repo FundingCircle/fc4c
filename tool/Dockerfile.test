@@ -2,7 +2,7 @@
 # using the tool because the tool requires access to your clipboard, which is
 # very tricky from within a Docker container.
 
-FROM quay.io/fundingcircle/clojure-node-chromium@sha256:84a563c327d900cbfacbeabf41f941a2395ca55835135f639e8b5d656b8d7c80
+FROM quay.io/fundingcircle/clojure-node-chromium:clojure-1.9.0.394_node-10.12_alpine-3.8
 LABEL maintainer="Avi Flax <avi.flax@fundingcircle.com>"
 
 WORKDIR /tool
@@ -20,8 +20,7 @@ COPY bin/download-node-deps bin/
 RUN bin/download-node-deps
 
 # rlwrap is handy in case we need to run a REPL in a container
-RUN echo "@testing http://nl.alpinelinux.org/alpine/edge/testing" >> /etc/apk/repositories
-RUN apk add --no-cache rlwrap@testing
+RUN apk add --no-cache --repository=http://nl.alpinelinux.org/alpine/edge/testing rlwrap
 
 # Now copy *all* the code.
 COPY . ./
