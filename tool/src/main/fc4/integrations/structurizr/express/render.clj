@@ -7,14 +7,15 @@
   FWIW, that process is stateless and ephemeral."
   [diagram-yaml]
   ;; TODO: use ProcessBuilder (or some Clojure wrapper for such) rather than sh
-  ;; so we can stream output from stderr to stderr.
+  ;; so we can stream output from stderr to stderr so we can display progress as
+  ;; it happens, so the user knows that something is actually happening!
   (let [result (sh "renderer/render.js"
                    :in diagram-yaml
                    :out-enc :bytes)
         {:keys [exit out err]} result]
     (if (zero? exit)
-        out
-        (throw (Exception. err)))))
+      out
+      (throw (Exception. err)))))
 
 (comment
   (use :reload 'fc4.integrations.structurizr.express.render 'clojure.java.io 'clojure.java.shell)
@@ -27,6 +28,6 @@
 
   (defn binary-spit [file-path data]
     (with-open [out (output-stream (file file-path))]
-       (.write out data)))
+      (.write out data)))
 
   (binary-spit "/tmp/diagram.png" pngb))

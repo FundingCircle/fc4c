@@ -1,3 +1,0 @@
-#!/bin/sh
-# wcb = “watch clipboard”
-clojure --main fc4.cli.wcb
