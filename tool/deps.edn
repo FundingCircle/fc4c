@@ -7,6 +7,7 @@
   potemkin                    {:mvn/version "0.4.5"}
   expound                     {:mvn/version "0.7.1"}
   com.cognitect/anomalies     {:mvn/version "0.1.12"}
+
   ;; test.chuck is in the main dependency list, rather than in the test profile,
   ;; because we’re using one of its generators in a spec in a source file.
   ;; This means we’ll also need org.clojure/test.check at runtime. Not ideal,
@@ -18,7 +19,8 @@
 
            :test          {:extra-paths ["test" "src/test_utils"]
                            :extra-deps  {org.clojure/test.check     {:mvn/version "0.10.0-alpha3"}
-                                         eftest                     {:mvn/version "0.5.3"}}}
+                                         eftest                     {:mvn/version "0.5.3"}
+                                         net.mikera/imagez          {:mvn/version "0.12.0"}}}
 
            :test/run      {:main-opts   ["-m" "fc4.test-runner.runner"]}
 
