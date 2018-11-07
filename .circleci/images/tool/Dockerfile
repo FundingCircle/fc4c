@@ -24,12 +24,9 @@ RUN wget -q https://download.clojure.org/install/linux-install-$CLOJURE_VERSION.
       && chmod +x linux-install-$CLOJURE_VERSION.sh \
       && ./linux-install-$CLOJURE_VERSION.sh
 
-# Add the dependencies of the Chromium that Puppeteer downloads for its own use.
-# We don’t actually need this Chromium, only its dependencies. Hypothetically we
-# could `apk del chromium` after installing it all, in order to reduce the image
-# size, but that also deletes all the dependencies that would then be unneeded,
-# as far as apk knows. So maybe we’ll figure that out at some point. Actually I
-# think rm -Rf /usr/lib/chromium should work, but I had some trouble with that.
-# I’m not sure why; it could be my lack of experience working with remote Docker
-# repositories. Might be worth trying again at some point.
-RUN apk -q --no-progress add --no-cache udev ttf-freefont libc6-compat chromium
+# We need Chromium for automated rendering with Puppeteer; see
+#   https://github.com/GoogleChrome/puppeteer/blob/master/docs/troubleshooting.md#running-on-alpine
+# This specific version of Chromium is locked to the specific version of
+# Puppeteer that we’re using as per the above page; see also
+#   <project-root>/tool/renderer/package.json
+RUN apk -q --no-progress --no-cache add chromium=68.0.3440.75-r0
