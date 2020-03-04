@@ -319,6 +319,20 @@ jobs:
           # file and we don’t want Snyk to pick up on that.
           command: node_modules/.bin/snyk test --policy-path=.circleci/snyk --file=pom.xml
 
+  # This job is only informational for now; it will succeed even if one or more of the dependencies
+  # are out of date. https://github.com/Olical/depot/issues/39
+  Check for outdated dependencies:
+    docker:
+      - image: circleci/clojure:openjdk-11-tools-deps-1.10.1.502-stretch
+    steps:
+      - checkout
+      - run:
+          name: Check runtime dependencies
+          command: clojure -A:outdated
+      - run:
+          name: Check *all* dependencies
+          command: clojure -A:outdated --every
+
 workflows:
   version: 2
 
@@ -379,3 +393,15 @@ workflows:
   Security:
     jobs:
       - Scan dependencies for vulnerabilities
+
+  Nightly:
+    triggers:
+      - schedule:
+          cron: "0 0 * * *" # midnight UTC
+          filters:
+            branches:
+              only:
+                - master
+    jobs:
+      - Scan dependencies for vulnerabilities
+      - Check for outdated dependencies
