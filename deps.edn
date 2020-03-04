@@ -16,11 +16,11 @@
   ; tools.cli has a deps.edn file but is somehow incompatible with Cambada’s uberjar process when
   ; brought in as a gitlib — for some reason it doesn’t get AOT compiled, nor does the source code
   ; get included if we use --copy-source. So we’ll have to stick with Maven for now for this lib.
-  org.clojure/tools.cli       {:mvn/version "0.4.2"}
+  org.clojure/tools.cli       {:mvn/version "1.0.194"}
 
   clj-chrome-devtools         {:git/url "https://github.com/tatut/clj-chrome-devtools" :sha "a1b1b0903ae5ba56eaada8496ed3785a53d8cc06"}
   clj-commons/clj-yaml        {:mvn/version "0.7.0"}
-  expound                     {:git/url "https://github.com/bhb/expound" :sha "9b5778a1a4ed91e2090308a6648ee9072076925a" :tag "v0.8.2"}
+  expound                     {:git/url "https://github.com/bhb/expound" :sha "e90a16162e97d16904d2353f46084e139b0e8f37" :tag "master"}
   com.cognitect/anomalies     {:mvn/version "0.1.12"}
   hawk                        {:mvn/version "0.2.11"}
   medley                      {:mvn/version "1.2.0"}
@@ -122,5 +122,6 @@
                                          "--out" "target"]}
 
            :outdated      {:extra-deps  {olical/depot {:git/url "https://github.com/Olical/depot"
-                                                       :sha "0558b5c87aa0f0a760be9eefd4daa11abeec576b" :tag "v1.8.4"}}
+                                                       :sha "cc9e732f32a1cfb74c5427f5d36187b0dfa447e6"
+                                                       :tag "master"}}
                            :main-opts   ["-m" "depot.outdated.main"]}}}
